@@ -13,10 +13,12 @@ logs/
 
 # Web 控制台源代码（暂不公开）
 web/
-# hub_server/frontend/  # 前端源码现在包含在版本控制中
+web/console.html
+hub_server/frontend/
 hub_server/help.md
 hub_server/CHANGELOG.md
 hub_server/hub_server
+hub_server/frontend/
 # ==================== 压缩文件 ====================
 # 所有压缩文件
 *.zip
