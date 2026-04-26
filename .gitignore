@@ -11,9 +11,7 @@ downloads/
 # 日志目录（运行日志）
 logs/
 
-# Web 控制台源代码（暂不公开）
-web/
-web/console.html
+# Web 控制台源代码
 hub_server/frontend/
 hub_server/help.md
 hub_server/CHANGELOG.md

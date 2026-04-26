@@ -8,7 +8,6 @@
 - `jietu.png` - 主界面截图
 - `liang.png` - 功能演示图
 - `pinglun.png` - 评论功能截图
-- `sous.png` - 搜索功能截图
 - `wxq.png` - 微信视频号界面
 
 ### 其他图片
@@ -50,7 +49,6 @@ assets/
 ├── jietu.png          # 主界面截图
 ├── liang.png          # 功能演示图
 ├── pinglun.png        # 评论功能截图
-├── sous.png           # 搜索功能截图
 ├── wxq.png            # 微信视频号界面
 ├── an.png             # 按钮示例
 └── zanshang.png       # 赞赏码

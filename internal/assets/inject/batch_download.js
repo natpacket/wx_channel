@@ -127,13 +127,6 @@ function __show_batch_download_ui__(videos, title) {
     if (liveCount > 0) {
       statsText += ', ' + liveCount + ' 个直播';
     }
-  } else if (currentPath.includes('/pages/s')) {
-    // 搜索页：显示"X 个动态, Y 个直播"
-    if (liveCount > 0) {
-      statsText = videoCount + ' 个动态, ' + liveCount + ' 个直播';
-    } else {
-      statsText = videoCount + ' 个动态';
-    }
   } else if (currentPath.includes('/pages/profile')) {
     // Profile页：显示"X 个视频, Y 个直播回放"
     if (liveCount > 0) {
@@ -508,13 +501,6 @@ function __update_batch_download_ui__(videos, title) {
       statsText = videoCount + ' 个视频';
       if (liveCount > 0) {
         statsText += ', ' + liveCount + ' 个直播';
-      }
-    } else if (currentPath.includes('/pages/s')) {
-      // 搜索页：显示"X 个动态, Y 个直播"
-      if (liveCount > 0) {
-        statsText = videoCount + ' 个动态, ' + liveCount + ' 个直播';
-      } else {
-        statsText = videoCount + ' 个动态';
       }
     } else if (currentPath.includes('/pages/profile')) {
       // Profile页：显示"X 个视频, Y 个直播回放"

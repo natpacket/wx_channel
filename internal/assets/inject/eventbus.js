@@ -18,7 +18,6 @@ var WXE = (() => {
     UserFeedsLoaded: "UserFeedsLoaded",
     UserLiveReplayLoaded: "UserLiveReplayLoaded", // 直播回放列表
     LiveUserFeedsLoaded: "LiveUserFeedsLoaded", // 与 wx_channels_download 对齐
-    SearchResultLoaded: "SearchResultLoaded", // 搜索结果（包含动态、账号、直播）
     GotoNextFeed: "GotoNextFeed",
     GotoPrevFeed: "GotoPrevFeed",
     HomeFeedChanged: "HomeFeedChanged",
@@ -97,10 +96,6 @@ var WXE = (() => {
     onLiveUserFeedsLoaded(handler) {
       eventbus.on(ChannelsEvents.LiveUserFeedsLoaded, handler);
       return () => { eventbus.off(ChannelsEvents.LiveUserFeedsLoaded, handler); };
-    },
-    onSearchResultLoaded(handler) {
-      eventbus.on(ChannelsEvents.SearchResultLoaded, handler);
-      return () => { eventbus.off(ChannelsEvents.SearchResultLoaded, handler); };
     },
     onHomeFeedChanged(handler) {
       eventbus.on(ChannelsEvents.HomeFeedChanged, handler);

@@ -221,7 +221,6 @@ func (app *App) Run() {
 		assets.HomeJS,
 		assets.FeedJS,
 		assets.ProfileJS,
-		assets.SearchJS,
 		assets.BatchDownloadJS,
 		assets.ZipJS,
 		assets.FileSaverJS,
@@ -440,7 +439,6 @@ func (app *App) printEnvConfig() {
 			utils.PrintLabelValue("📊", "日志最大大小", fmt.Sprintf("%d MB", app.Cfg.MaxLogSizeMB))
 		}
 		utils.PrintLabelValue("💾", "保存页面快照", fmt.Sprintf("%v", app.Cfg.SavePageSnapshot))
-		utils.PrintLabelValue("🔍", "保存搜索数据", fmt.Sprintf("%v", app.Cfg.SaveSearchData))
 		utils.PrintLabelValue("📄", "保存JS文件", fmt.Sprintf("%v", app.Cfg.SavePageJS))
 		utils.PrintLabelValue("🖼️", "显示日志按钮", fmt.Sprintf("%v", app.Cfg.ShowLogButton))
 		utils.PrintLabelValue("📤", "分片上传并发", app.Cfg.UploadChunkConcurrency)
@@ -464,10 +462,8 @@ func (app *App) printTitle() {
 	color.Yellow("    微信视频号下载助手 v%s", app.Cfg.Version)
 	color.Yellow("    项目地址：https://github.com/nobiyou/wx_channel")
 	color.Green("    v%s 更新要点：", app.Cfg.Version)
-	color.Green("    • 详情页修复 - 兼容 Home 路径下的分享视频与个人页直达视频")
-	color.Green("    • 下载恢复 - 修复直达视频已拿到信息但下载按钮灰色不可用")
-	color.Green("    • 评论恢复 - 修复详情页模式下评论采集功能未就绪的问题")
-	color.Green("    • 稳定延续 - 延续新版页面、Hub 与雷达开关的适配优化")
+	color.Green("    • 搜索页清理 - 清理对应的脚本挂载、事件总线联动和无效入口")
+	color.Green("    • 开放web控制台 - 未修复完，先放开使用，后续再完善功能")
 	fmt.Println()
 }
 

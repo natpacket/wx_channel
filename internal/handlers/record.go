@@ -232,8 +232,6 @@ func (h *RecordHandler) inferPageSource(url string) string {
 		return "home"
 	} else if strings.Contains(url, "/pages/profile") {
 		return "profile"
-	} else if strings.Contains(url, "/pages/s") {
-		return "search"
 	}
 	return "unknown"
 }

@@ -235,8 +235,6 @@ func (h *BatchHandler) HandleBatchStart(Conn *SunnyNet.HttpConn) bool {
 				pageSource = "batch_home"
 			} else if strings.Contains(referer, "/web/pages/profile") {
 				pageSource = "batch_profile"
-			} else if strings.Contains(referer, "/web/pages/s") {
-				pageSource = "batch_search" // 搜索页面批量下载
 			} else {
 				pageSource = "batch_channels" // 默认标记为视频号批量下载
 			}
@@ -568,10 +566,10 @@ func (h *BatchHandler) downloadVideoOnce(ctx context.Context, task *BatchTask, f
 				if total > 0 {
 					task.SizeMB = fmt.Sprintf("%.2fMB", task.TotalMB)
 				}
-				
+
 				// 每10%输出一次日志
 				if int(task.Progress)%10 == 0 && task.Progress > 0 {
-					utils.Info("📊 [批量下载] %s 进度: %.1f%% (%.2f/%.2f MB)", 
+					utils.Info("📊 [批量下载] %s 进度: %.1f%% (%.2f/%.2f MB)",
 						task.Title, task.Progress, task.DownloadedMB, task.TotalMB)
 				}
 			}
@@ -584,7 +582,7 @@ func (h *BatchHandler) downloadVideoOnce(ctx context.Context, task *BatchTask, f
 		connections = h.getConfig().DownloadConnections
 	}
 
-	err := h.gopeedService.DownloadSync(ctx, task.URL, filePath, connections, onProgress)
+	err := h.gopeedService.DownloadSync(ctx, task.URL, filePath, connections, nil, onProgress)
 	if err != nil {
 		return err
 	}

@@ -479,14 +479,6 @@ func (h *APIHandler) HandleTip(Conn *SunnyNet.HttpConn) bool {
 		pageURL := strings.TrimPrefix(msg, "页面链接<")
 		pageURL = strings.TrimSuffix(pageURL, ">")
 		utils.LogInfo("[页面链接] URL=%s", pageURL)
-	} else if strings.Contains(msg, "搜索页面已加载") {
-		// 记录搜索页面加载
-		utils.LogInfo("[搜索页面] 页面已加载")
-	} else if strings.Contains(msg, "搜索关键词:") {
-		// 提取搜索关键词
-		keyword := strings.TrimPrefix(msg, "搜索关键词: ")
-		keyword = strings.TrimSpace(keyword)
-		utils.LogInfo("[搜索关键词] 关键词=%s", keyword)
 	} else if strings.Contains(msg, "导出动态:") {
 		// 提取导出信息
 		// 格式: "导出动态: 格式=JSON, 视频数=10"

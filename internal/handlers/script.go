@@ -26,7 +26,6 @@ type ScriptHandler struct {
 	homeJS          []byte
 	feedJS          []byte
 	profileJS       []byte
-	searchJS        []byte
 	batchDownloadJS []byte
 	zipJS           []byte
 	fileSaverJS     []byte
@@ -39,7 +38,7 @@ type ScriptHandler struct {
 }
 
 // NewScriptHandler 创建脚本处理器
-func NewScriptHandler(cfg *config.Config, coreJS, decryptJS, downloadJS, homeJS, feedJS, profileJS, searchJS, batchDownloadJS, zipJS, fileSaverJS, mittJS, eventbusJS, utilsJS, apiClientJS, keepAliveJS []byte, version string) *ScriptHandler {
+func NewScriptHandler(cfg *config.Config, coreJS, decryptJS, downloadJS, homeJS, feedJS, profileJS, batchDownloadJS, zipJS, fileSaverJS, mittJS, eventbusJS, utilsJS, apiClientJS, keepAliveJS []byte, version string) *ScriptHandler {
 	return &ScriptHandler{
 		coreJS:          coreJS,
 		decryptJS:       decryptJS,
@@ -47,7 +46,6 @@ func NewScriptHandler(cfg *config.Config, coreJS, decryptJS, downloadJS, homeJS,
 		homeJS:          homeJS,
 		feedJS:          feedJS,
 		profileJS:       profileJS,
-		searchJS:        searchJS,
 		batchDownloadJS: batchDownloadJS,
 		zipJS:           zipJS,
 		fileSaverJS:     fileSaverJS,
@@ -128,7 +126,7 @@ func (h *ScriptHandler) HandleHTMLResponse(Conn *SunnyNet.HttpConn, host, path s
 	html = scriptReg2.ReplaceAllString(html, `href="$1.js`+h.version+`"`)
 	Conn.Response.Header.Set("__debug", "append_script")
 
-	if host == "channels.weixin.qq.com" && (path == "/web/pages/feed" || path == "/web/pages/home" || path == "/web/pages/profile" || path == "/web/pages/s" || path == "/web/pages/account/like") {
+	if host == "channels.weixin.qq.com" && (path == "/web/pages/feed" || path == "/web/pages/home" || path == "/web/pages/profile" || path == "/web/pages/account/like") {
 		// 根据页面路径注入不同的脚本
 		injectedScripts := h.buildInjectedScripts(path)
 		html = strings.Replace(html, "<head>", "<head>\n"+injectedScripts, 1)
@@ -212,13 +210,13 @@ func (h *ScriptHandler) buildInjectedScripts(path string) string {
 	keepAliveScript := fmt.Sprintf(`<script>%s</script>`, string(h.keepAliveJS))
 
 	// 模块化脚本 - 按依赖顺序加载
+	fileSaverInlineScript := fmt.Sprintf(`<script>%s</script>`, string(h.fileSaverJS))
 	coreScript := fmt.Sprintf(`<script>%s</script>`, string(h.coreJS))
 	decryptScript := fmt.Sprintf(`<script>%s</script>`, string(h.decryptJS))
 	downloadScript := fmt.Sprintf(`<script>%s</script>`, string(h.downloadJS))
 	batchDownloadScript := fmt.Sprintf(`<script>%s</script>`, string(h.batchDownloadJS))
 	feedScript := fmt.Sprintf(`<script>%s</script>`, string(h.feedJS))
 	profileScript := fmt.Sprintf(`<script>%s</script>`, string(h.profileJS))
-	searchScript := fmt.Sprintf(`<script>%s</script>`, string(h.searchJS))
 	homeScript := fmt.Sprintf(`<script>%s</script>`, string(h.homeJS))
 
 	// 预加载FileSaver.js库 - 所有页面都需要
@@ -234,7 +232,7 @@ func (h *ScriptHandler) buildInjectedScripts(path string) string {
 	savePageContentScript := h.getSavePageContentScript()
 
 	// 基础脚本（所有页面都需要）
-	baseScripts := logPanelScript + mittScript + eventbusScript + utilsScript + apiClientScript + keepAliveScript + coreScript + decryptScript + downloadScript + batchDownloadScript + feedScript + profileScript + searchScript + homeScript + preloadScript + downloadTrackerScript + captureUrlScript + savePageContentScript
+	baseScripts := logPanelScript + mittScript + eventbusScript + utilsScript + apiClientScript + keepAliveScript + fileSaverInlineScript + coreScript + decryptScript + downloadScript + batchDownloadScript + feedScript + profileScript + homeScript + preloadScript + downloadTrackerScript + captureUrlScript + savePageContentScript
 
 	// 根据页面路径决定是否注入特定脚本
 	var pageSpecificScripts string
@@ -259,11 +257,6 @@ func (h *ScriptHandler) buildInjectedScripts(path string) string {
 		// Feed页面（视频详情）：注入视频缓存监控和评论采集脚本
 		pageSpecificScripts = h.getVideoCacheNotificationScript() + h.getCommentCaptureScript()
 		utils.LogFileInfo("[脚本注入] Feed页面 - 注入视频缓存监控和评论采集脚本")
-
-	case "/web/pages/s":
-		// 搜索页面：注入搜索模块
-		pageSpecificScripts = searchScript
-		utils.LogInfo("[脚本注入] 搜索页面 - 注入搜索模块（事件系统）")
 
 	default:
 		// 其他页面：不注入页面特定脚本
@@ -290,29 +283,13 @@ setTimeout(function() {
 // getPreloadScript 获取预加载FileSaver.js库的脚本
 func (h *ScriptHandler) getPreloadScript() string {
 	return `<script>
-	// 预加载FileSaver.js库
-	(function() {
-		const script = document.createElement('script');
-		script.src = '/FileSaver.min.js';
-		document.head.appendChild(script);
-	})();
+	// FileSaver 已内联注入，保留空预加载占位避免旧逻辑报错
 	</script>`
 }
 
 // getDownloadTrackerScript 获取下载记录功能的脚本
 func (h *ScriptHandler) getDownloadTrackerScript() string {
 	return `<script>
-	// 确保FileSaver.js库已加载
-	if (typeof saveAs === 'undefined') {
-		console.log('加载FileSaver.js库');
-		const script = document.createElement('script');
-		script.src = '/FileSaver.min.js';
-		script.onload = function() {
-			console.log('FileSaver.js库加载成功');
-		};
-		document.head.appendChild(script);
-	}
-
 	// 跟踪已记录的下载，防止重复记录
 	window.__wx_channels_recorded_downloads = {};
 
@@ -1305,34 +1282,6 @@ func (h *ScriptHandler) handleVirtualSvgIcons(path string, content string) (stri
 
 	if strings.Contains(content, "finderGetRecommend(") {
 		utils.LogFileInfo("[API拦截] ⏭️ 跳过 finderGetRecommend 重写，避免干扰新版 Home 首屏初始化")
-	}
-
-	// 拦截搜索API - finderPCSearch（PC端搜索）
-	// 函数格式: async finderPCSearch(n){...return(...),t}async
-	// 在最后的 return 之前插入代码，然后保持 ,t}async 不变
-	searchPCRegex := regexp.MustCompile(`(async finderPCSearch\([^)]+\)\{.*?)(,t\}async)`)
-
-	if searchPCRegex.MatchString(content) {
-		utils.LogFileInfo("[API拦截] ✅ 在virtual_svg-icons-register中成功拦截 finderPCSearch 函数")
-		// 在 ,t 之前插入代码，保持 ,t}async 完整
-		// 从 acctList 中提取正在直播的账号，添加调试日志
-		searchPCReplace := `$1,t&&t.data&&(function(){var lives=t.data.liveObjectList||[];var accounts=[];var liveCount=0;if(t.data.acctList){t.data.acctList.forEach(function(info){if(info.liveStatus===1){liveCount++;console.log("[搜索API] 发现直播账号:",info.contact?info.contact.nickname:"未知",info.liveStatus,info.liveInfo);}if(info.liveStatus===1&&info.liveInfo){lives.push({id:info.contact.username,objectId:info.contact.username,nickname:info.contact.nickname,username:info.contact.username,description:info.liveInfo.description||"",streamUrl:info.liveInfo.streamUrl,coverUrl:info.liveInfo.media&&info.liveInfo.media[0]?info.liveInfo.media[0].thumbUrl:"",thumbUrl:info.liveInfo.media&&info.liveInfo.media[0]?info.liveInfo.media[0].thumbUrl:"",liveInfo:info.liveInfo,type:"live"});}accounts.push(info);});}if(liveCount>0){console.log("[搜索API] 共发现",liveCount,"个直播账号，成功提取",lives.length,"个");}var searchData={feeds:t.data.objectList||[],accounts:accounts,lives:lives};WXU.emit("SearchResultLoaded",searchData);})()$2`
-		content = searchPCRegex.ReplaceAllString(content, searchPCReplace)
-	} else {
-		utils.LogFileInfo("[API拦截] ❌ 在virtual_svg-icons-register中未找到 finderPCSearch 函数")
-	}
-
-	// 拦截搜索API - finderSearch（移动端搜索）
-	// 使用非贪婪匹配，匹配到最后的 ,t}async 模式
-	searchRegex := regexp.MustCompile(`(async finderSearch\([^)]+\)\{.*?)(,t\}async)`)
-
-	if searchRegex.MatchString(content) {
-		utils.LogFileInfo("[API拦截] ✅ 在virtual_svg-icons-register中成功拦截 finderSearch 函数")
-		// 从 infoList 中提取正在直播的账号，添加调试日志
-		searchReplace := `$1,t&&t.data&&(function(){var lives=[];var accounts=[];var liveCount=0;if(t.data.infoList){t.data.infoList.forEach(function(info){if(info.liveStatus===1){liveCount++;console.log("[搜索API] 发现直播账号:",info.contact?info.contact.nickname:"未知",info.liveStatus,info.liveInfo);}if(info.liveStatus===1&&info.liveInfo){lives.push({id:info.contact.username,objectId:info.contact.username,nickname:info.contact.nickname,username:info.contact.username,description:info.liveInfo.description||"",streamUrl:info.liveInfo.streamUrl,coverUrl:info.liveInfo.media&&info.liveInfo.media[0]?info.liveInfo.media[0].thumbUrl:"",thumbUrl:info.liveInfo.media&&info.liveInfo.media[0]?info.liveInfo.media[0].thumbUrl:"",liveInfo:info.liveInfo,type:"live"});}accounts.push(info);});}if(liveCount>0){console.log("[搜索API] 共发现",liveCount,"个直播账号，成功提取",lives.length,"个");}var searchData={feeds:t.data.objectList||[],accounts:accounts,lives:lives};WXU.emit("SearchResultLoaded",searchData);})()$2`
-		content = searchRegex.ReplaceAllString(content, searchReplace)
-	} else {
-		utils.LogFileInfo("[API拦截] ❌ 在virtual_svg-icons-register中未找到 finderSearch 函数")
 	}
 
 	// 拦截 export 语句，提取所有导出的 API 函数

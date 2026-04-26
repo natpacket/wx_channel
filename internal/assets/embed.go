@@ -31,9 +31,6 @@ var FeedJS []byte
 //go:embed inject/profile.js
 var ProfileJS []byte
 
-//go:embed inject/search.js
-var SearchJS []byte
-
 //go:embed inject/batch_download.js
 var BatchDownloadJS []byte
 
