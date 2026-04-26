@@ -300,6 +300,22 @@ window.__wx_api_client = {
       var event = new CustomEvent('wx_download_progress', { detail: data.payload });
       document.dispatchEvent(event);
     }
+
+    if (data.action === 'download_complete') {
+      if (typeof __wx_log === 'function') {
+        __wx_log({ msg: '✓ 视频已下载' + (data.payload && data.payload.decrypted ? '并解密' : '') });
+      }
+      var completeEvent = new CustomEvent('wx_download_complete', { detail: data.payload });
+      document.dispatchEvent(completeEvent);
+    }
+
+    if (data.action === 'download_failed') {
+      if (typeof __wx_log === 'function') {
+        __wx_log({ msg: '❌ 下载视频失败: ' + ((data.payload && data.payload.error) || '未知错误') });
+      }
+      var failedEvent = new CustomEvent('wx_download_failed', { detail: data.payload });
+      document.dispatchEvent(failedEvent);
+    }
   },
 
   // 处理 API 调用请求

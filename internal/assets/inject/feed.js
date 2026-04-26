@@ -548,6 +548,7 @@ function __show_feed_download_options(profile) {
   // 视频下载选项
   if (profile.spec && profile.spec.length > 0) {
     html += '<div style="margin-bottom:12px;font-size:12px;color:#999;">选择画质:</div>';
+    html += '<div class="download-option" data-index="-1" style="padding:10px 16px;margin:8px 0;background:rgba(7,193,96,0.15);color:#07c160;border-radius:6px;cursor:pointer;text-align:center;transition:background 0.2s;font-size:13px;font-weight:500;">' + __wx_channels_primary_download_label__(profile) + '</div>';
     profile.spec.forEach(function (spec, index) {
       var label = spec.fileFormat || ('画质' + (index + 1));
       if (spec.width && spec.height) {
@@ -561,6 +562,7 @@ function __show_feed_download_options(profile) {
 
   // 封面下载
   html += '<div class="download-cover" style="padding:10px 16px;margin:8px 0;background:rgba(7,193,96,0.15);color:#07c160;border-radius:6px;cursor:pointer;text-align:center;font-size:13px;font-weight:500;">下载封面</div>';
+  html += '<div class="export-raw-json" style="padding:10px 16px;margin:8px 0;background:rgba(255,255,255,0.08);border-radius:6px;cursor:pointer;text-align:center;font-size:13px;">导出原始JSON</div>';
 
   html += '</div>';
 
@@ -614,6 +616,14 @@ function __show_feed_download_options(profile) {
   coverBtn.onclick = function () {
     closeMenu();
     __wx_channels_handle_download_cover();
+  };
+
+  var exportRawBtn = menu.querySelector('.export-raw-json');
+  exportRawBtn.onmouseover = function () { this.style.background = 'rgba(255,255,255,0.15)'; };
+  exportRawBtn.onmouseout = function () { this.style.background = 'rgba(255,255,255,0.08)'; };
+  exportRawBtn.onclick = function () {
+    closeMenu();
+    __wx_channels_export_current_raw_json__();
   };
 
   menu.querySelector('.close-menu').onclick = closeMenu;

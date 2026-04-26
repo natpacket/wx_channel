@@ -569,6 +569,8 @@ WXE.onUserLiveReplayLoaded(function (feeds) {
       coverUrl: media ? (media.thumbUrl || media.coverUrl || '') : '',
       thumbUrl: media ? (media.thumbUrl || '') : '',
       url: media ? (media.url + (media.urlToken || '')) : '',
+      originalUrl: media ? (media.url || '') : '',
+      urlToken: media ? (media.urlToken || '') : '',
       size: media ? (media.fileSize || 0) : 0,
       key: media ? (media.decodeKey || '') : '',
       duration: duration,

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"sync"
 	"time"
 	"wx_channel/internal/utils"
@@ -77,7 +78,7 @@ func (s *GopeedService) DeleteTask(taskID string) error {
 
 // DownloadSync downloads a file synchronously (blocking until done)
 // Used by BatchHandler to replace existing downloadVideoOnce logic
-func (s *GopeedService) DownloadSync(ctx context.Context, url string, path string, connections int, onProgress func(progress float64, downloaded int64, total int64)) error {
+func (s *GopeedService) DownloadSync(ctx context.Context, url string, path string, connections int, headers map[string]string, onProgress func(progress float64, downloaded int64, total int64)) error {
 	if s.Downloader == nil {
 		return fmt.Errorf("downloader not initialized")
 	}
@@ -92,8 +93,8 @@ func (s *GopeedService) DownloadSync(ctx context.Context, url string, path strin
 	}
 
 	opts := &base.Options{
-		Path:  dir,
-		Name:  name,
+		Path: dir,
+		Name: name,
 		Extra: &httpProtocol.OptsExtra{
 			Connections: connections, // 单文件多线程下载
 		},
@@ -101,6 +102,22 @@ func (s *GopeedService) DownloadSync(ctx context.Context, url string, path strin
 
 	// Create task using CreateDirect
 	req := &base.Request{URL: url}
+	if len(headers) > 0 {
+		reqHeaders := make(map[string]string, len(headers))
+		for k, v := range headers {
+			k = strings.TrimSpace(k)
+			v = strings.TrimSpace(v)
+			if k == "" || v == "" {
+				continue
+			}
+			reqHeaders[k] = v
+		}
+		if len(reqHeaders) > 0 {
+			req.Extra = &httpProtocol.ReqExtra{
+				Header: reqHeaders,
+			}
+		}
+	}
 	id, err := s.Downloader.CreateDirect(req, opts)
 	if err != nil {
 		return fmt.Errorf("failed to create task: %v", err)
